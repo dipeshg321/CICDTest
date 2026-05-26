@@ -43,7 +43,7 @@ jobs:
 
     - name: Verify Publish Folder
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: dir .\publish /s
+      run: Get-ChildItem .\publish -Recurse
 
     - name: Deploy via MSDeploy
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
