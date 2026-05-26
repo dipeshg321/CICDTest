@@ -28,20 +28,20 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Restore Dependencies
-      run: dotnet restore --locked-mode
+      run: dotnet restore CICDTest.csproj --locked-mode -r win-x64
       env:
         NUGET_PACKAGES: ${{ github.workspace }}\.nuget\packages
 
     - name: Compile Application
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build CICDTest.csproj --configuration Release --no-restore -r win-x64
 
     - name: Execute Unit Tests
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: dotnet test CICDTest.csproj --configuration Release --no-build --verbosity normal
 
     - name: Publish Artifacts
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: |
-        dotnet publish -c Release -o .\publish --no-build --runtime win-x64 --self-contained false
+        dotnet publish CICDTest.csproj -c Release -o .\publish --no-build -r win-x64 --self-contained false
 
     - name: Deploy via MSDeploy
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
