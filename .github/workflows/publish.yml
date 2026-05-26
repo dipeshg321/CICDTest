@@ -17,18 +17,20 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.0.x' # Adjust to matching target framework version (.NET 8/9/10)
+        dotnet-version: '10.0.x'
 
     - name: Cache NuGet Packages
       uses: actions/cache@v4
       with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+        path: ${{ github.workspace }}\.nuget\packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln', '**/*.slnx') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
 
     - name: Restore Dependencies
       run: dotnet restore --locked-mode
+      env:
+        NUGET_PACKAGES: ${{ github.workspace }}\.nuget\packages
 
     - name: Compile Application
       run: dotnet build --configuration Release --no-restore
@@ -37,16 +39,16 @@ jobs:
       run: dotnet test --configuration Release --no-build --verbosity normal
 
     - name: Publish Artifacts
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: |
-        dotnet publish -c Release -o ./publish --no-build --runtime win-x64 --self-contained false
+        dotnet publish -c Release -o .\publish --no-build --runtime win-x64 --self-contained false
 
     - name: Deploy via MSDeploy
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       uses: rasmusbuchholdt/simply-web-deploy@2.1.0
       with:
         website-name: ${{ secrets.MONSTER_SITE_NAME }}
         server-computer-name: ${{ secrets.MONSTER_SERVER_URL }}
         server-username: ${{ secrets.MONSTER_USERNAME }}
         server-password: ${{ secrets.MONSTER_PASSWORD }}
-        source-path: ./publish
+        source-path: .\publish
